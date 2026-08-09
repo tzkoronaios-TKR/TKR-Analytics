@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TKR Analytics - Institutional Investment Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body {
+      background-color: #0d0f14;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .bg-panel { background-color: #141822; }
+    .bg-panel-light { background-color: #1b202d; }
+    .border-accent { border-color: #252c3c; }
+    .text-emerald-glow {
+      color: #00E676;
+      text-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
+    }
+    .text-red-glow { color: #FF5252; }
+    .green-accent { background-color: #00E676; }
+
+    .edit-input {
+      background-color: #0a0c10;
+      border: 1px solid #2d3548;
+      color: #ffffff;
+      border-radius: 6px;
+      padding: 4px 8px;
+      width: 85px;
+      text-align: right;
+      font-family: monospace;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .edit-input:focus {
+      outline: none;
+      border-color: #00E676;
+      box-shadow: 0 0 0 2px rgba(0, 230, 118, 0.25);
+      background-color: #121620;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0d0f14; }
+    ::-webkit-scrollbar-thumb { background: #252c3c; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00E676; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <div id="report-container" class="flex flex-col flex-1">
+
+    <!-- TOP GLOBAL MACRO BANNER -->
+    <div class="bg-emerald-950 border-b border-emerald-800 h-9 px-6 flex items-center justify-between text-[11px] shrink-0 text-emerald-100">
+      <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-1.5">
+          <span class="text-emerald-300 font-medium">Shiller PE (CAPE):</span>
+          <span class="text-emerald-400 font-bold font-mono">35.8x</span>
+          <span class="text-amber-300 text-[10px] font-semibold">(Elevated)</span>
+        </div>
+        <div class="flex items-center space-x-1.5 border-l border-emerald-800/80 pl-6">
+          <span class="text-emerald-300 font-medium">Warren Buffett Indicator:</span>
+          <span class="text-emerald-400 font-bold font-mono">198.4%</span>
+          <span class="text-red-300 text-[10px] font-semibold">(Overvalued)</span>
+        </div>
+        <div class="flex items-center space-x-1.5 border-l border-emerald-800/80 pl-6">
+          <span class="text-emerald-300 font-medium">S&P 500 Forward P/E:</span>
+          <span class="text-emerald-400 font-bold font-mono">21.8x</span>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2 text-emerald-300/80">
+        <span class="text-emerald-400 font-bold">● Macro Stream Active</span>
+      </div>
+    </div>
+
+    <!-- HEADER NAVIGATION WITH TKR ANALYTICS BRANDING -->
+    <header class="bg-panel border-b border-accent h-16 flex items-center justify-between px-6 shrink-0">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-lg green-accent flex items-center justify-center font-bold text-black text-xl">▲</div>
+        <span class="font-bold text-xl tracking-wide text-white">TKR<span class="text-emerald-glow">ANALYTICS</span></span>
+      </div>
+
+      <div class="relative w-96">
+        <input type="text" id="searchInput" placeholder="Search ticker or company (e.g. NVDA, AAPL, BTC)..." 
+          class="w-full bg-panel-light border border-accent rounded-lg py-2 pl-10 pr-4 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition">
+        <svg class="w-4 h-4 absolute left-3 top-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> Markets Live
+        </span>
+        <button onclick="openAboutModal()" class="bg-emerald-500 hover:bg-emerald-400 text-black font-bold border border-emerald-400 text-xs px-4 py-2 rounded-lg transition flex items-center space-x-2">
+          <span>🏢</span>
+          <span>About Company Dossier</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN PRODUCT & WATCHLIST WORKSPACE -->
+    <div class="flex flex-1 overflow-hidden min-h-[580px]">
+      
+      <!-- LEFT SIDEBAR: AESTHETIC REFINED WATCHLIST WITH ADD/DELETE ASSETS -->
+      <aside class="w-80 bg-panel border-r border-accent flex flex-col shrink-0">
+        <!-- Minimalist, high-aesthetic header with Add Ticker action -->
+        <div class="p-3.5 border-b border-accent flex justify-between items-center bg-panel-light/30">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="font-bold text-xs tracking-widest uppercase text-gray-200 font-mono">MARKETS</span>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <span id="watchlistCountBadge" class="text-[10px] font-semibold font-mono text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-2 py-0.5 rounded-full">2 TRACKED</span>
+            <button onclick="openAddWatchlistModal()" title="Add Watchlist Ticker" class="bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-black border border-emerald-500/40 font-bold text-xs p-1 px-2 rounded transition">
+              + Add Ticker
+            </button>
+          </div>
+        </div>
+        <div class="flex-1 overflow-y-auto divide-y divide-accent/40" id="watchlistContainer"></div>
+      </aside>
+
+      <main class="flex-1 flex flex-col overflow-y-auto">
+        <div class="bg-panel/50 border-b border-accent p-6 flex items-center justify-between shrink-0">
+          <div>
+            <div class="flex items-center space-x-3">
+              <h1 class="text-3xl font-extrabold text-white" id="activeTicker">NVDA</h1>
+              <span class="text-gray-400 font-medium" id="activeName">NVIDIA Corporation</span>
+              <span class="bg-panel-light text-gray-300 text-xs px-2 py-1 rounded border border-accent" id="activeExchange">NASDAQ</span>
+            </div>
+            <div class="flex items-baseline space-x-4 mt-2">
+              <span class="text-3xl font-bold text-white" id="activePrice">$128.50</span>
+              <span class="text-sm font-semibold text-emerald-400" id="activeChange">+3.45% (+$4.28 Today)</span>
+            </div>
+          </div>
+
+          <button onclick="openAboutModal()" class="bg-panel-light hover:border-emerald-500 border border-accent/80 hover:bg-emerald-950/40 text-emerald-400 px-3.5 py-1.5 rounded-lg font-semibold text-xs transition flex items-center space-x-1.5 shadow">
+            <span>📄</span>
+            <span>Company Breakdown</span>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-6 flex-1">
+          <div class="grid grid-cols-4 gap-4">
+            <div class="bg-panel border border-accent p-4 rounded-xl">
+              <div class="text-xs text-gray-400 mb-1">Market Cap</div>
+              <div class="text-2xl font-bold text-white" id="metricCap">$3.15T</div>
+              <div class="text-[11px] text-emerald-400 mt-1">Mega Cap Tier</div>
+            </div>
+            <div class="bg-panel border border-accent p-4 rounded-xl">
+              <div class="text-xs text-gray-400 mb-1">P/E Ratio (TTM)</div>
+              <div class="text-2xl font-bold text-white" id="metricPe">72.4</div>
+              <div class="text-[11px] text-gray-400 mt-1">Growth Premium</div>
+            </div>
+            <div class="bg-panel border border-accent p-4 rounded-xl">
+              <div class="text-xs text-gray-400 mb-1">EPS (TTM)</div>
+              <div class="text-2xl font-bold text-emerald-400" id="metricEps">$1.77</div>
+              <div class="text-[11px] text-emerald-400 mt-1">+85% YoY Surge</div>
+            </div>
+            <div class="bg-panel border border-accent p-4 rounded-xl">
+              <div class="text-xs text-gray-400 mb-1">DCF Intrinsic Value</div>
+              <div class="text-2xl font-bold text-emerald-400" id="metricDcf">$142.00</div>
+              <div class="text-[11px] text-emerald-400 mt-1" id="metricStatus">Undervalued (10.5%)</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-6">
+            <div class="col-span-2 bg-panel border border-accent rounded-xl p-6 space-y-4">
+              <h3 class="font-bold text-base text-white border-b border-accent pb-3 flex justify-between items-center">
+                <span>Financials & Valuation Framework</span>
+                <span class="text-xs text-emerald-400 font-mono">Q1 FY2027 Audited</span>
+              </h3>
+
+              <div class="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+                <div class="flex justify-between py-2 border-b border-accent/40"><span class="text-gray-400">Quarterly Revenue</span><span class="text-white font-bold" id="detailRev">$81.62 Billion</span></div>
+                <div class="flex justify-between py-2 border-b border-accent/40"><span class="text-gray-400">Revenue Growth (YoY)</span><span class="text-emerald-400 font-bold" id="detailRevGrowth">+85.2%</span></div>
+                <div class="flex justify-between py-2 border-b border-accent/40"><span class="text-gray-400">Gross Profit Margin</span><span class="text-emerald-400 font-bold" id="detailGrossMargin">74.9%</span></div>
+                <div class="flex justify-between py-2 border-b border-accent/40"><span class="text-gray-400">Free Cash Flow (FCF)</span><span class="text-white font-bold" id="detailFcf">$49.0 Billion</span></div>
+                <div class="flex justify-between py-2 border-b border-accent/40"><span class="text-gray-400">Return on Equity (ROE)</span><span class="text-emerald-400 font-bold" id="detailRoe">118.5%</span></div>
+                <div class="flex justify-between py-2 border-b border-accent/40"><span class="text-gray-400">52-Week Range</span><span class="text-white font-bold" id="detailRange">$45.00 - $140.76</span></div>
+              </div>
+
+              <div class="pt-2">
+                <div class="text-xs text-gray-400 mb-2">Key Executive Leadership</div>
+                <div class="flex space-x-3 text-xs" id="execContainer"></div>
+              </div>
+            </div>
+
+            <div class="bg-panel border border-accent rounded-xl p-6 flex flex-col justify-between">
+              <div>
+                <h3 class="font-bold text-base text-white border-b border-accent pb-3 mb-4">Analyst & Institutional Outlook</h3>
+                <div class="space-y-4">
+                  <div>
+                    <div class="flex justify-between text-xs text-gray-400 mb-1"><span>Consensus Rating</span><span class="text-emerald-400 font-bold">Strong Buy</span></div>
+                    <div class="w-full bg-panel-light h-2 rounded-full overflow-hidden flex">
+                      <div class="bg-emerald-500 h-full w-[80%]"></div>
+                      <div class="bg-yellow-500 h-full w-[12%]"></div>
+                      <div class="bg-red-500 h-full w-[8%]"></div>
+                    </div>
+                  </div>
+
+                  <div class="bg-panel-light/40 border border-accent/60 p-3 rounded-lg text-xs space-y-2">
+                    <div class="flex justify-between"><span class="text-gray-400">Average Price Target</span><span class="text-white font-bold" id="targetAvg">$162.00</span></div>
+                    <div class="flex justify-between"><span class="text-gray-400">Implied Upside</span><span class="text-emerald-400 font-bold" id="targetUpside">+26.0%</span></div>
+                  </div>
+
+                  <div class="bg-emerald-950/20 border border-emerald-800/40 p-3 rounded-lg text-xs space-y-1">
+                    <div class="flex justify-between text-emerald-400 font-bold"><span>Latest 13F Filing Stream</span><span id="13fDateTag">Q1 2026</span></div>
+                    <div class="text-gray-300 text-[11px]" id="teaser13fText">Loading institutional activity...</div>
+                  </div>
+                </div>
+              </div>
+
+              <button onclick="openAboutModal()" class="w-full mt-6 bg-panel-light hover:bg-emerald-950/60 border border-accent text-emerald-400 font-semibold text-xs py-2.5 rounded-lg transition text-center">Read Full Company Dossier →</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- HOLDINGS & PORTFOLIO CALCULATOR -->
+    <section class="p-8 space-y-6 max-w-7xl mx-auto w-full border-t border-accent mt-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-panel border border-accent p-5 rounded-xl shadow-lg">
+          <div class="text-xs text-gray-400 font-medium">Total Portfolio Value</div>
+          <div class="text-2xl font-bold text-white mt-1" id="statTotalValue">$0.00</div>
+          <div class="text-[11px] text-gray-400 mt-1">Total Cost Basis: <span id="statTotalBasis" class="text-gray-200 font-mono">$0.00</span></div>
+        </div>
+        <div class="bg-panel border border-accent p-5 rounded-xl shadow-lg">
+          <div class="text-xs text-gray-400 font-medium">Total Profit / Loss ($)</div>
+          <div class="text-2xl font-bold mt-1" id="statTotalPL">$0.00</div>
+          <div class="text-[11px] text-gray-400 mt-1">Unrealized Net Return</div>
+        </div>
+        <div class="bg-panel border border-accent p-5 rounded-xl shadow-lg">
+          <div class="text-xs text-gray-400 mb-1 font-medium">Total Profit / Loss (%)</div>
+          <div class="text-2xl font-bold mt-1" id="statTotalPLPercent">0.00%</div>
+          <div class="text-[11px] text-gray-400 mt-1">Weighted Portfolio Gain</div>
+        </div>
+        <div class="bg-panel border border-accent p-5 rounded-xl shadow-lg">
+          <div class="text-xs text-gray-400 font-medium">Portfolio Valuation Status</div>
+          <div class="text-2xl font-bold mt-1" id="statValuationStatus">Calculating...</div>
+          <div class="text-[11px] text-gray-400 mt-1" id="statValuationSub">Weighted Intrinsic Fair Value vs. Market</div>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-2xl font-bold text-white tracking-tight">Holdings & Position Calculator</h1>
+            <p class="text-xs text-gray-400 mt-0.5">Edit shares or price live, or manage asset allocation</p>
+          </div>
+          
+          <button onclick="openAddAssetModal()" class="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs px-4 py-2.5 rounded-lg transition flex items-center space-x-1.5 shadow-lg">
+            <span>➕</span>
+            <span>Add Symbol</span>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-accent bg-panel shadow-xl">
+          <table class="w-full text-left text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-accent text-gray-400 font-semibold text-xs bg-panel-light/50">
+                <th class="py-3.5 px-4">Asset ↑</th>
+                <th class="py-3.5 px-4 text-center">Shares Owned ✏️</th>
+                <th class="py-3.5 px-4 text-right">Price ↕</th>
+                <th class="py-3.5 px-4 text-right">Entry Price ($) ✏️</th>
+                <th class="py-3.5 px-4 text-right">Entry Value</th>
+                <th class="py-3.5 px-4 text-right">Value ($) ↕</th>
+                <th class="py-3.5 px-4 text-right">P/L ↕</th>
+                <th class="py-3.5 px-4 text-right">P/L (%) ↕</th>
+                <th class="py-3.5 px-4 text-right">Valuation Status</th>
+                <th class="py-3.5 px-4 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-accent/40 text-gray-200" id="holdingsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PORTFOLIO FUNDAMENTALS TABLE -->
+    <section class="p-8 space-y-6 max-w-7xl mx-auto w-full">
+      <div class="flex justify-between items-center border-b border-accent pb-3">
+        <h1 class="text-2xl font-bold text-white tracking-tight">Portfolio Fundamentals</h1>
+        <p class="text-xs text-gray-400">Financial ratios and underlying business health metrics</p>
+      </div>
+
+      <div class="bg-panel border border-accent rounded-xl p-6 shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-accent text-gray-400 font-semibold text-xs bg-panel-light/50">
+                <th class="py-3.5 px-4">Stock ↑</th>
+                <th class="py-3.5 px-4 text-right">Market Cap. ↕</th>
+                <th class="py-3.5 px-4 text-right">Beta ↕</th>
+                <th class="py-3.5 px-4 text-right">P/E ratio ↕</th>
+                <th class="py-3.5 px-4 text-right">EPS ↕</th>
+                <th class="py-3.5 px-4 text-right">Profit Margin ↕</th>
+                <th class="py-3.5 px-4 text-right">Debt/Equity</th>
+                <th class="py-3.5 px-4 text-right">Return on Equity</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-accent/40 text-gray-200" id="fundamentalsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- DARK PIE CHART & PORTFOLIO OVERVIEW BENCHMARK SECTION -->
+    <section class="p-8 space-y-6 max-w-7xl mx-auto w-full">
+      <div class="flex justify-between items-center border-b border-accent pb-3">
+        <div>
+          <h1 class="text-2xl font-bold text-white tracking-tight">Portfolio Allocation & Benchmark Comparison</h1>
+          <p class="text-xs text-gray-400 mt-0.5">Asset weight distribution vs. S&P 500 performance across timeframes</p>
+        </div>
+        <span class="text-xs text-emerald-400 font-mono font-semibold">● Dynamic Portfolio Analytics</span>
+      </div>
+
+      <div class="bg-panel border border-accent rounded-xl p-6 shadow-xl grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+        <!-- PIE CHART (2 COLS) -->
+        <div class="md:col-span-2 flex flex-col items-center justify-center p-4 bg-panel-light/30 border border-accent/60 rounded-xl relative min-h-[320px]">
+          <h3 class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-4 self-start">Asset Weight (%) vs. Total Portfolio</h3>
+          <div class="w-full max-w-[420px] h-[260px] relative">
+            <canvas id="portfolioPieChart"></canvas>
+          </div>
+        </div>
+
+        <!-- PORTFOLIO OVERVIEW CARD -->
+        <div class="flex flex-col justify-between space-y-5 p-6 bg-panel-light/50 border border-accent/80 rounded-xl h-full">
+          <div>
+            <div class="flex justify-between items-center border-b border-accent/80 pb-3 mb-4">
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider">Portfolio Overview</h3>
+              
+              <div class="flex bg-panel p-1 rounded-lg border border-accent text-[10px] font-semibold space-x-1" id="tfFilterGroup">
+                <button onclick="updateBenchmarkHorizon('1M', this)" class="px-2 py-1 rounded text-gray-400 hover:text-white transition">1M</button>
+                <button onclick="updateBenchmarkHorizon('3M', this)" class="px-2 py-1 rounded text-gray-400 hover:text-white transition">3M</button>
+                <button onclick="updateBenchmarkHorizon('6M', this)" class="px-2 py-1 rounded text-gray-400 hover:text-white transition">6M</button>
+                <button onclick="updateBenchmarkHorizon('YTD', this)" class="px-2 py-1 rounded bg-emerald-500 text-black font-extrabold shadow">YTD</button>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="bg-panel p-3.5 rounded-xl border border-accent/60 flex justify-between items-center">
+                <div>
+                  <div class="text-[11px] text-gray-400 font-medium">Portfolio Performance</div>
+                  <div class="text-xl font-bold font-mono text-emerald-glow mt-0.5" id="benchPortfolioPerf">+40.05%</div>
+                </div>
+                <span class="text-xs font-semibold px-2 py-1 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded-md" id="benchHorizonLabel">YTD</span>
+              </div>
+
+              <div class="bg-panel p-3.5 rounded-xl border border-accent/60 flex justify-between items-center">
+                <div>
+                  <div class="text-[11px] text-gray-400 font-medium">S&P 500 Benchmark</div>
+                  <div class="text-xl font-bold font-mono text-emerald-400 mt-0.5" id="benchSpPerf">+18.20%</div>
+                </div>
+                <span class="text-xs text-gray-400 font-mono">SPY ETF</span>
+              </div>
+
+              <div class="bg-emerald-950/30 p-3.5 rounded-xl border border-emerald-800/60 flex justify-between items-center">
+                <div>
+                  <div class="text-[11px] text-emerald-300 font-bold">Relative Alpha vs. S&P 500</div>
+                  <div class="text-xl font-extrabold font-mono text-emerald-glow mt-0.5" id="benchAlpha">+21.85%</div>
+                </div>
+                <span class="text-[10px] font-bold text-emerald-400 bg-emerald-900/60 px-2 py-0.5 rounded border border-emerald-700">Outperforming</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-[10px] text-gray-400 border-t border-accent/40 pt-3">
+            Comparison calculated against weighted asset returns vs. S&P 500 total return index.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOWNLOAD REPORT BUTTON BAR -->
+    <div class="p-8 max-w-7xl mx-auto w-full flex justify-between items-center bg-panel border border-accent rounded-xl mb-12 shadow-2xl">
+      <div>
+        <h3 class="text-lg font-bold text-white">Generate Executive Report</h3>
+        <p class="text-xs text-gray-400 mt-0.5">Export a clean PDF copy of your portfolio holdings, positioning, and financial valuation metrics.</p>
+      </div>
+
+      <button onclick="downloadPdfReport()" class="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm px-6 py-3 rounded-xl transition shadow-lg flex items-center space-x-2">
+        <span>📥</span>
+        <span>Download PDF Report</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ABOUT MODAL -->
+  <div id="aboutModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-6">
+    <div class="bg-panel border border-accent rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-6 border-b border-accent flex justify-between items-start bg-panel-light/30">
+        <div>
+          <div class="flex items-center space-x-3">
+            <h2 class="text-2xl font-extrabold text-white" id="modalCompanyTitle">NVIDIA Corporation (NVDA)</h2>
+            <span class="bg-emerald-950 text-emerald-400 border border-emerald-800 text-xs px-3 py-1 rounded-full font-semibold" id="modalSectorTag">Information Technology</span>
+          </div>
+          <p class="text-xs text-gray-400 mt-1" id="modalIndustryTag">Industry: Semiconductors & AI Infrastructure Hardware</p>
+        </div>
+        <button onclick="closeAboutModal()" class="text-gray-400 hover:text-white text-2xl font-bold transition">✕</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6 text-sm text-gray-300">
+        <div>
+          <h3 class="text-white font-bold text-base mb-2 flex items-center space-x-2"><span class="text-emerald-400">■</span> <span>Company Overview & Core Business</span></h3>
+          <p class="leading-relaxed bg-panel-light/30 p-4 rounded-xl border border-accent/50" id="modalOverviewText">Loading overview...</p>
+        </div>
+
+        <div>
+          <h3 class="text-white font-bold text-base mb-2 flex justify-between items-center">
+            <div class="flex items-center space-x-2"><span class="text-emerald-400">■</span> <span>13F Filing Institutional Activity</span></div>
+            <span class="text-xs text-gray-400 font-normal" id="modalFilingPeriod">Filing Period: Q1 2026</span>
+          </h3>
+          <div class="bg-panel-light/30 p-4 rounded-xl border border-accent/50 space-y-3">
+            <div class="grid grid-cols-3 gap-3 text-xs mb-2">
+              <div class="bg-panel p-2.5 rounded-lg border border-accent/40"><div class="text-gray-400">New Positions Added</div><div class="text-emerald-400 font-bold text-sm" id="modalNewFunds">+48 Funds</div></div>
+              <div class="bg-panel p-2.5 rounded-lg border border-accent/40"><div class="text-gray-400">Positions Increased</div><div class="text-emerald-400 font-bold text-sm" id="modalIncreasedFunds">612 Funds</div></div>
+              <div class="bg-panel p-2.5 rounded-lg border border-accent/40"><div class="text-gray-400">Total Institutional Ownership</div><div class="text-white font-bold text-sm" id="modalTotalInstOwn">68.4%</div></div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="border-b border-accent/60 text-gray-400 font-semibold bg-panel/40">
+                    <th class="p-2">Investor / Fund Name</th><th class="p-2">Action</th><th class="p-2">Shares Changed</th><th class="p-2">Total Position Value</th>
+                  </tr>
+                </thead>
+                <tbody id="modalInstitutionalTable" class="divide-y divide-accent/30 text-gray-200"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-white font-bold text-base mb-2 flex items-center space-x-2"><span class="text-emerald-400">■</span> <span>Key Management & Leadership</span></h3>
+          <div class="grid grid-cols-2 gap-4" id="modalManagementGrid"></div>
+        </div>
+
+        <div>
+          <h3 class="text-white font-bold text-base mb-2 flex items-center space-x-2"><span class="text-emerald-400">■</span> <span>Latest Earnings & Segment Breakdown</span></h3>
+          <div class="bg-panel-light/30 p-4 rounded-xl border border-accent/50 space-y-3" id="modalEarningsBreakdown"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-emerald-950/20 border border-emerald-800/50 p-4 rounded-xl space-y-2">
+            <h4 class="text-emerald-400 font-bold text-xs uppercase tracking-wider">Growth Catalysts</h4>
+            <ul class="text-xs text-gray-300 space-y-1.5 list-disc pl-4" id="modalCatalysts"></ul>
+          </div>
+          <div class="bg-red-950/20 border border-red-800/50 p-4 rounded-xl space-y-2">
+            <h4 class="text-red-400 font-bold text-xs uppercase tracking-wider">Key Risks</h4>
+            <ul class="text-xs text-gray-300 space-y-1.5 list-disc pl-4" id="modalRisks"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-accent bg-panel-light/20 flex justify-between items-center text-xs text-gray-500">
+        <span>Data synced from SEC Form 13F Filings & Institutional Holding Records</span>
+        <button onclick="closeAboutModal()" class="bg-panel-light hover:bg-emerald-900 text-white font-bold px-5 py-2 rounded-lg transition border border-accent">Close Overview</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD ASSET MODAL -->
+  <div id="addAssetModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-6">
+    <div class="bg-panel border border-accent rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-accent pb-3">
+        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+          <span>➕ Add Asset to Portfolio</span>
+        </h3>
+        <button onclick="closeAddAssetModal()" class="text-gray-400 hover:text-white font-bold text-xl">✕</button>
+      </div>
+
+      <form id="addAssetForm" onsubmit="handleAddAsset(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block text-gray-400 mb-1">Ticker Symbol (e.g. TSLA, PLTR, MSFT)</label>
+          <input type="text" id="newTicker" required placeholder="TSLA" class="w-full bg-panel-light border border-accent rounded-lg p-2.5 text-white font-mono uppercase focus:border-emerald-500 focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-gray-400 mb-1">Company Name</label>
+          <input type="text" id="newName" required placeholder="Tesla Inc." class="w-full bg-panel-light border border-accent rounded-lg p-2.5 text-white focus:border-emerald-500 focus:outline-none" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-gray-400 mb-1">Current Price ($)</label>
+            <input type="number" step="any" min="0" id="newPrice" required placeholder="210.50" class="w-full bg-panel-light border border-accent rounded-lg p-2.5 text-white font-mono focus:border-emerald-500 focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-gray-400 mb-1">Entry Price ($)</label>
+            <input type="number" step="any" min="0" id="newEntryPrice" required placeholder="185.00" class="w-full bg-panel-light border border-accent rounded-lg p-2.5 text-white font-mono focus:border-emerald-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-gray-400 mb-1">Shares Owned</label>
+            <input type="number" step="any" min="0" id="newShares" required placeholder="25" class="w-full bg-panel-light border border-accent rounded-lg p-2.5 text-white font-mono focus:border-emerald-500 focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-gray-400 mb-1">Fair Value ($ DCF)</label>
+            <input type="number" step="any" min="0" id="newFairValue" required placeholder="220.00" class="w-full bg-panel-light border border-accent rounded-lg p-2.5 text-white font-mono focus:border-emerald-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end space-x-3">
+          <button type="button" onclick="closeAddAssetModal()" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white font-semibold transition">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold transition">Add Position</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADD WATCHLIST ASSET MODAL -->
+  <div id="addWatchlistModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-6">
+    <div class="bg-panel border border-accent rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-accent pb-3">
+        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+          <span>📈 Add Watchlist Ticker</span>
+        </h3>
+        <button onclick="closeAddWatchlistModal()" class="text-gray-400 hover:text-white font-bold text-xl">✕</button>
+      </div>
+
+      <form id="addWatchlistForm" onsubmit="handleAddWatchlist(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block text-gray-400 mb-1">Ticker Symbol</label>
+          <input type="text" id="wlTicker" required placeholder="META" class="w-full bg-panel-light border border-accent rounded-lg p-2.5 text-white font-mono uppercase focus:border-emerald-500 focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-gray-400 mb-1">Company Name</label>
+          <input type="text" id="wlName" required placeholder="Meta Platforms Inc." class="w-full bg-panel-light border border-accent rounded-lg p-2.5 text-white focus:border-emerald-500 focus:outline-none" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-gray-400 mb-1">Current Price ($)</label>
+            <input type="number" step="any" min="0" id="wlPrice" required placeholder="515.20" class="w-full bg-panel-light border border-accent rounded-lg p-2.5 text-white font-mono focus:border-emerald-500 focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-gray-400 mb-1">Daily Move (%)</label>
+            <input type="text" id="wlDaily" required placeholder="+2.40%" class="w-full bg-panel-light border border-accent rounded-lg p-2.5 text-white font-mono focus:border-emerald-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end space-x-3">
+          <button type="button" onclick="closeAddWatchlistModal()" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white font-semibold transition">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold transition">Add to Watchlist</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PLATFORM SCRIPT -->
+  <script>
+    const watchlistData = [
+      { 
+        ticker: 'NVDA', name: 'NVIDIA Corporation', exchange: 'NASDAQ', price: 128.50, d: '+3.45%', w: '+5.20%', m: '+12.40%', ytd: '+154.20%', 
+        marketCap: '$3.15T', pe: '72.4', eps: '$1.77', dcf: '$142.00', status: 'Undervalued (10.5%)', range: '$45.00 - $140.76',
+        rev: '$81.62B', revGrowth: '+85.2%', margin: '74.9%', fcf: '$49.0B', roe: '118.5%',
+        targetAvg: '$162.00', targetUpside: '+26.0%', sector: 'Information Technology', industry: 'Semiconductors & AI Hardware',
+        executives: [ { role: 'CEO & Founder', name: 'Jensen Huang' }, { role: 'CFO', name: 'Colette Kress' } ],
+        overview: 'NVIDIA Corporation pioneered accelerated computing. The company invented the GPU in 1999, sparking gaming growth and fueling the modern AI era.',
+        filingPeriod: 'Latest SEC 13F Filings (Q1 2026)', newFunds: '+52 Funds', increasedFunds: '640 Funds', totalInstOwn: '68.4%',
+        investorTeaser: 'Stanley Druckenmiller & Appaloosa (Tepper) increased stakes by over 15%.',
+        investors: [
+          { fund: 'Vanguard Group Inc', action: 'Increased Position', actionType: 'buy', shares: '+14.2M (+2.1%)', value: '$345.2 Billion' },
+          { fund: 'Duquesne Family Office (Druckenmiller)', action: 'Bought / Added', actionType: 'buy', shares: '+1.45M (+24.5%)', value: '$186.3 Million' }
+        ],
+        earnings: { period: 'Q1 FY2027', revenue: '$81.62 Billion', netIncome: '$58.32 Billion', segments: [ { name: 'Data Center AI', value: '$75.0 Billion (+92% YoY)' } ] },
+        catalysts: ['Unprecedented demand for Blackwell GPU architectures.', 'Cloud provider AI capex allocations.'],
+        risks: ['Geopolitical trade restrictions.', 'Advanced chip packaging supply constraints.']
+      },
+      { 
+        ticker: 'AAPL', name: 'Apple Inc.', exchange: 'NASDAQ', price: 224.30, d: '-0.85%', w: '+1.10%', m: '+3.20%', ytd: '+18.50%', 
+        marketCap: '$3.44T', pe: '34.1', eps: '$6.58', dcf: '$210.00', status: 'Overvalued (6.8%)', range: '$164.08 - $237.23',
+        rev: '$109.42B', revGrowth: '+16.0%', margin: '50.1%', fcf: '$34.4B', roe: '148.8%',
+        targetAvg: '$245.00', targetUpside: '+9.2%', sector: 'Consumer Electronics', industry: 'Hardware & Ecosystem',
+        executives: [ { role: 'CEO', name: 'Tim Cook' }, { role: 'CFO', name: 'Luca Maestri' } ],
+        overview: 'Apple Inc. designs, manufactures, and markets smartphones, PCs, tablets, and subscription services built around its walled-garden ecosystem.',
+        filingPeriod: 'Latest SEC 13F Filings (Q1 2026)', newFunds: '+34 Funds', increasedFunds: '480 Funds', totalInstOwn: '60.1%',
+        investorTeaser: 'Berkshire Hathaway maintained core holding; Morgan Stanley added +4.2M shares.',
+        investors: [
+          { fund: 'Berkshire Hathaway (Warren Buffett)', action: 'Maintained Stake', actionType: 'hold', shares: '400.0M (0.0%)', value: '$89.7 Billion' }
+        ],
+        earnings: { period: 'Q3 FY2026', revenue: '$109.42 Billion', netIncome: '$29.79 Billion', segments: [ { name: 'iPhone Division', value: '$54.3 Billion' } ] },
+        catalysts: ['Hardware upgrade cycle driven by Apple Intelligence.'],
+        risks: ['App Store antitrust regulatory scrutiny.']
+      }
+    ];
+
+    const holdings = [
+      { ticker: 'COIN', name: 'Coinbase Global Inc', price: 153.60, priceChange: '+5.63%', shares: 70.00, entryPrice: 186.27, fairValue: 140.00, badgeBg: 'bg-blue-600', mCap: '34.16B', beta: '+3.35', peRatio: '+55.25', eps: '+$2.78', margin: '+12.74%', debtEq: '+59.08%', roe: '+6.69%' },
+      { ticker: 'ASML', name: 'ASML Holding NV ADR', price: 1740.00, priceChange: '+2.15%', shares: 15.00, entryPrice: 714.36, fairValue: 1850.00, badgeBg: 'bg-slate-700', mCap: '668.71B', beta: '+1.39', peRatio: '+55.43', eps: '+$31.41', margin: '+29.71%', debtEq: '+9.09%', roe: '+52.24%' },
+      { ticker: 'NVDA', name: 'NVIDIA Corporation', price: 223.96, priceChange: '+2.27%', shares: 100.00, entryPrice: 114.06, fairValue: 245.00, badgeBg: 'bg-emerald-600', mCap: '5.42T', beta: '+2.21', peRatio: '+33.53', eps: '+$6.68', margin: '+62.97%', debtEq: '+6.56%', roe: '+114.29%' },
+      { ticker: 'VST', name: 'Vistra Corp.', price: 140.59, priceChange: '-0.56%', shares: 50.00, entryPrice: 137.92, fairValue: 130.00, badgeBg: 'bg-blue-900', mCap: '47.4B', beta: '+1.43', peRatio: '+23.39', eps: '+$6.01', margin: '+11.53%', debtEq: '+355.78%', roe: '+42.9%' },
+      { ticker: 'OKLO', name: 'Oklo Inc.', price: 48.42, priceChange: '+14.77%', shares: 100.00, entryPrice: 32.07, fairValue: 35.00, badgeBg: 'bg-gray-600', mCap: '8.42B', beta: '+1.2', peRatio: '-59.05', eps: '-$0.82', margin: '+0%', debtEq: '+0.1%', roe: '-8.87%' },
+      { ticker: 'MSTR', name: 'MicroStrategy Incorporated', price: 100.01, priceChange: '+3.26%', shares: 35.00, entryPrice: 272.34, fairValue: 80.00, badgeBg: 'bg-red-600', mCap: '34.57B', beta: '+3.55', peRatio: '-2.58', eps: '-$38.73', margin: '+0%', debtEq: '+18.09%', roe: '-30.76%' },
+      { ticker: 'GOOGL', name: 'Alphabet Inc Class A', price: 354.30, priceChange: '-0.96%', shares: 142.58, entryPrice: 152.82, fairValue: 380.00, badgeBg: 'bg-blue-500', mCap: '2.08T', beta: '+1.25', peRatio: '+19.13', eps: '+$18.52', margin: '+54.77%', debtEq: '+17.6%', roe: '+48.68%' },
+      { ticker: 'AMZN', name: 'Amazon.com Inc', price: 274.48, priceChange: '+0.82%', shares: 30.55, entryPrice: 178.41, fairValue: 290.00, badgeBg: 'bg-amber-600', mCap: '2.95T', beta: '+1.46', peRatio: '+31.59', eps: '+$8.69', margin: '+12.22%', debtEq: '+47.5%', roe: '+24.29%' }
+    ];
+
+    const benchmarkData = {
+      '1M': { sp: 3.20, portfolioFactor: 0.25 },
+      '3M': { sp: 8.40, portfolioFactor: 0.55 },
+      '6M': { sp: 12.10, portfolioFactor: 0.80 },
+      'YTD': { sp: 18.20, portfolioFactor: 1.00 }
+    };
+
+    let selectedHorizon = 'YTD';
+    let activeTickerData = watchlistData[0];
+    let pieChartInstance = null;
+
+    function formatCurrency(val) {
+      if (Math.abs(val) >= 1000000) return '$' + (val / 1000000).toFixed(2) + 'M';
+      if (Math.abs(val) >= 1000) return '$' + (val / 1000).toFixed(2) + 'K';
+      return '$' + val.toFixed(2);
+    }
+
+    function renderWatchlist() {
+      const container = document.getElementById('watchlistContainer');
+      container.innerHTML = '';
+
+      document.getElementById('watchlistCountBadge').innerText = `${watchlistData.length} TRACKED`;
+
+      watchlistData.forEach((item, index) => {
+        const isPositive = !item.d.startsWith('-');
+        const colorClass = isPositive ? 'text-emerald-400' : 'text-red-400';
+
+        const row = document.createElement('div');
+        row.className = `p-4 cursor-pointer hover:bg-panel-light/80 transition relative group ${index === 0 ? 'bg-panel-light border-l-4 border-emerald-500' : ''}`;
+        row.onclick = () => selectTicker(item, row);
+
+        row.innerHTML = `
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <div class="font-bold text-white flex items-center space-x-2">
+                <span>${item.ticker}</span>
+              </div>
+              <div class="text-xs text-gray-400">${item.name}</div>
+            </div>
+            <div class="text-right flex items-center space-x-2">
+              <div>
+                <div class="font-bold text-white">$${item.price.toLocaleString()}</div>
+                <div class="text-xs font-semibold ${colorClass}">${item.d}</div>
+              </div>
+              <!-- Delete Watchlist Ticker Button -->
+              <button onclick="event.stopPropagation(); deleteWatchlistTicker(${index})" title="Remove Ticker" class="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 p-1 transition">
+                🗑️
+              </button>
+            </div>
+          </div>
+          <div class="grid grid-cols-4 gap-1.5 mt-3 pt-2 border-t border-accent/40 text-xs text-center">
+            <div class="bg-panel p-1 rounded border border-accent/30"><div class="text-gray-500 text-[9px]">DAILY</div><div class="${colorClass} font-bold">${item.d}</div></div>
+            <div class="bg-panel p-1 rounded border border-accent/30"><div class="text-gray-500 text-[9px]">WEEKLY</div><div class="text-emerald-400 font-bold">${item.w}</div></div>
+            <div class="bg-panel p-1 rounded border border-accent/30"><div class="text-gray-500 text-[9px]">MONTHLY</div><div class="text-emerald-400 font-bold">${item.m}</div></div>
+            <div class="bg-panel p-1 rounded border border-accent/30"><div class="text-gray-500 text-[9px]">YTD</div><div class="text-emerald-400 font-bold">${item.ytd}</div></div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function deleteWatchlistTicker(index) {
+      if (confirm(`Remove ${watchlistData[index].ticker} from tracked watchlist?`)) {
+        watchlistData.splice(index, 1);
+        if (watchlistData.length > 0) {
+          selectTicker(watchlistData[0]);
+        }
+        renderWatchlist();
+      }
+    }
+
+    function openAddWatchlistModal() {
+      document.getElementById('addWatchlistModal').classList.remove('hidden');
+    }
+
+    function closeAddWatchlistModal() {
+      document.getElementById('addWatchlistModal').classList.add('hidden');
+      document.getElementById('addWatchlistForm').reset();
+    }
+
+    function handleAddWatchlist(e) {
+      e.preventDefault();
+      const ticker = document.getElementById('wlTicker').value.toUpperCase().trim();
+      const name = document.getElementById('wlName').value.trim();
+      const price = parseFloat(document.getElementById('wlPrice').value);
+      const d = document.getElementById('wlDaily').value.trim() || '+0.00%';
+
+      if (!ticker || !name || isNaN(price)) return alert("Please complete required fields.");
+
+      watchlistData.push({
+        ticker,
+        name,
+        exchange: 'NASDAQ',
+        price,
+        d,
+        w: '+1.50%',
+        m: '+4.20%',
+        ytd: '+15.00%',
+        marketCap: '$25.0B',
+        pe: '28.5',
+        eps: '+$3.20',
+        dcf: '$240.00',
+        status: 'Undervalued (8.0%)',
+        range: '$150 - $260',
+        rev: '$12.5B',
+        revGrowth: '+18.0%',
+        margin: '22.0%',
+        fcf: '$3.5B',
+        roe: '25.0%',
+        targetAvg: '$275.00',
+        targetUpside: '+12.5%',
+        sector: 'Technology',
+        industry: 'Software Enterprise',
+        executives: [{ role: 'CEO', name: 'Executive Officer' }],
+        overview: `${name} (${ticker}) expands high-margin market solutions.`,
+        filingPeriod: 'Latest SEC 13F Filings',
+        newFunds: '+15 Funds',
+        increasedFunds: '120 Funds',
+        totalInstOwn: '72.0%',
+        investorTeaser: 'Institutional buyers accumulated net shares during the latest quarter.',
+        investors: [{ fund: 'Vanguard Group Inc', action: 'Increased Position', actionType: 'buy', shares: '+1.2M', value: '$250M' }],
+        earnings: { period: 'Q1 2026', revenue: '$12.5B', netIncome: '$2.8B', segments: [{ name: 'Core Segment', value: '$12.5B' }] },
+        catalysts: ['Enterprise software expansion.'],
+        risks: ['Competitive market pressure.']
+      });
+
+      renderWatchlist();
+      selectTicker(watchlistData[watchlistData.length - 1]);
+      closeAddWatchlistModal();
+    }
+
+    function selectTicker(data, element) {
+      activeTickerData = data;
+      document.querySelectorAll('#watchlistContainer > div').forEach(el => el.classList.remove('bg-panel-light', 'border-l-4', 'border-emerald-500'));
+      if(element) element.classList.add('bg-panel-light', 'border-l-4', 'border-emerald-500');
+
+      document.getElementById('activeTicker').innerText = data.ticker;
+      document.getElementById('activeName').innerText = data.name;
+      document.getElementById('activeExchange').innerText = data.exchange;
+      document.getElementById('activePrice').innerText = `$${data.price.toLocaleString()}`;
+      document.getElementById('activeChange').innerText = `${data.d} Today`;
+
+      document.getElementById('metricCap').innerText = data.marketCap;
+      document.getElementById('metricPe').innerText = data.pe;
+      document.getElementById('metricEps').innerText = data.eps;
+      document.getElementById('metricDcf').innerText = data.dcf;
+      document.getElementById('metricStatus').innerText = data.status;
+
+      document.getElementById('detailRev').innerText = data.rev;
+      document.getElementById('detailRevGrowth').innerText = data.revGrowth;
+      document.getElementById('detailGrossMargin').innerText = data.margin;
+      document.getElementById('detailFcf').innerText = data.fcf;
+      document.getElementById('detailRoe').innerText = data.roe;
+      document.getElementById('detailRange').innerText = data.range;
+
+      document.getElementById('targetAvg').innerText = data.targetAvg;
+      document.getElementById('targetUpside').innerText = data.targetUpside;
+      document.getElementById('teaser13fText').innerText = data.investorTeaser;
+
+      const execContainer = document.getElementById('execContainer');
+      execContainer.innerHTML = '';
+      data.executives.forEach(exec => {
+        const badge = document.createElement('div');
+        badge.className = 'bg-panel-light/60 border border-accent/60 px-3 py-1.5 rounded-lg';
+        badge.innerHTML = `<span class="text-gray-400 font-normal">${exec.role}:</span> <span class="text-white font-bold">${exec.name}</span>`;
+        execContainer.appendChild(badge);
+      });
+    }
+
+    function renderHoldings() {
+      const tbody = document.getElementById('holdingsTableBody');
+      const fTbody = document.getElementById('fundamentalsTableBody');
+      
+      tbody.innerHTML = '';
+      fTbody.innerHTML = '';
+
+      let totalEntryBasis = 0;
+      let totalCurrentValue = 0;
+      let totalFairValue = 0;
+
+      const chartLabels = [];
+      const chartValues = [];
+
+      holdings.forEach((item, index) => {
+        const entryValue = item.shares * item.entryPrice;
+        const currentValue = item.shares * item.price;
+        const assetFairValue = item.shares * item.fairValue;
+
+        const pl = currentValue - entryValue;
+        const plPercent = entryValue > 0 ? (pl / entryValue) * 100 : 0;
+
+        totalEntryBasis += entryValue;
+        totalCurrentValue += currentValue;
+        totalFairValue += assetFairValue;
+
+        chartLabels.push(item.ticker);
+        chartValues.push(currentValue);
+
+        const assetValuationPercent = ((item.price - item.fairValue) / item.fairValue) * 100;
+        const isAssetOvervalued = assetValuationPercent > 0;
+        const assetValuationText = isAssetOvervalued ? `Overvalued (+${assetValuationPercent.toFixed(1)}%)` : `Undervalued (${assetValuationPercent.toFixed(1)}%)`;
+        const assetValuationColor = isAssetOvervalued ? 'text-red-glow' : 'text-emerald-glow';
+
+        const isPositive = pl >= 0;
+        const plColorClass = isPositive ? 'text-emerald-glow' : 'text-red-glow';
+        const plSign = isPositive ? '+' : '';
+
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-white/5 transition';
+
+        row.innerHTML = `
+          <td class="py-3.5 px-4 font-semibold text-white flex items-center space-x-2">
+            <span class="w-6 h-6 rounded ${item.badgeBg} flex items-center justify-center text-[10px] font-bold text-white">${item.ticker.substring(0, 4)}</span>
+            <span class="text-blue-400 font-bold">${item.ticker}</span>
+            <span class="text-xs">🇺🇸</span>
+            <span class="text-gray-400 font-normal text-xs hidden sm:inline">${item.name}</span>
+          </td>
+          <td class="py-3.5 px-4 text-center">
+            <input type="number" step="any" min="0" value="${item.shares}" onchange="updateRow(${index}, 'shares', this.value)" class="edit-input" />
+          </td>
+          <td class="py-3.5 px-4 text-right font-medium font-mono">${item.price.toLocaleString(undefined, {minimumFractionDigits: 2})} <span class="${item.priceChange.startsWith('-') ? 'text-red-glow' : 'text-emerald-glow'} text-xs ml-1">${item.priceChange}</span></td>
+          <td class="py-3.5 px-4 text-right">
+            <input type="number" step="any" min="0" value="${item.entryPrice}" onchange="updateRow(${index}, 'entryPrice', this.value)" class="edit-input" />
+          </td>
+          <td class="py-3.5 px-4 text-right font-mono text-gray-300">${formatCurrency(entryValue)}</td>
+          <td class="py-3.5 px-4 text-right font-mono font-bold text-white">${formatCurrency(currentValue)}</td>
+          <td class="py-3.5 px-4 text-right font-mono font-semibold ${plColorClass}">${plSign}${formatCurrency(pl)}</td>
+          <td class="py-3.5 px-4 text-right font-mono font-semibold ${plColorClass}">${plSign}${plPercent.toFixed(2)}%</td>
+          <td class="py-3.5 px-4 text-right font-semibold ${assetValuationColor}">${assetValuationText}</td>
+          <td class="py-3.5 px-4 text-center">
+            <button onclick="deleteAsset(${index})" title="Delete Ticker" class="text-gray-500 hover:text-red-400 p-1 rounded transition hover:bg-red-950/30">
+              🗑️
+            </button>
+          </td>
+        `;
+
+        tbody.appendChild(row);
+
+        const fRow = document.createElement('tr');
+        fRow.className = 'hover:bg-white/5 transition';
+        const peClass = item.peRatio.startsWith('-') ? 'text-red-glow' : 'text-emerald-glow';
+
+        fRow.innerHTML = `
+          <td class="py-3.5 px-4 font-bold text-blue-400">${item.ticker}</td>
+          <td class="py-3.5 px-4 text-right text-gray-300 font-mono">${item.mCap}</td>
+          <td class="py-3.5 px-4 text-right text-emerald-glow font-mono">${item.beta}</td>
+          <td class="py-3.5 px-4 text-right ${peClass} font-mono">${item.peRatio}</td>
+          <td class="py-3.5 px-4 text-right ${peClass} font-mono">${item.eps}</td>
+          <td class="py-3.5 px-4 text-right text-emerald-glow font-mono">${item.margin}</td>
+          <td class="py-3.5 px-4 text-right text-emerald-glow font-mono">${item.debtEq}</td>
+          <td class="py-3.5 px-4 text-right ${item.roe.startsWith('-') ? 'text-red-glow' : 'text-emerald-glow'} font-mono">${item.roe}</td>
+        `;
+
+        fTbody.appendChild(fRow);
+      });
+
+      const totalPL = totalCurrentValue - totalEntryBasis;
+      const totalPLPercent = totalEntryBasis > 0 ? (totalPL / totalEntryBasis) * 100 : 0;
+      const totalPLIsPositive = totalPL >= 0;
+
+      const portfolioValuationDiff = totalFairValue > 0 ? ((totalCurrentValue - totalFairValue) / totalFairValue) * 100 : 0;
+      const isPortfolioOvervalued = portfolioValuationDiff > 0;
+
+      document.getElementById('statTotalValue').innerText = formatCurrency(totalCurrentValue);
+      document.getElementById('statTotalBasis').innerText = formatCurrency(totalEntryBasis);
+      
+      const plElem = document.getElementById('statTotalPL');
+      plElem.innerText = (totalPLIsPositive ? '+' : '') + formatCurrency(totalPL);
+      plElem.className = `text-2xl font-bold mt-1 ${totalPLIsPositive ? 'text-emerald-glow' : 'text-red-glow'}`;
+
+      const plPercentElem = document.getElementById('statTotalPLPercent');
+      plPercentElem.innerText = (totalPLIsPositive ? '+' : '') + totalPLPercent.toFixed(2) + '%';
+      plPercentElem.className = `text-2xl font-bold mt-1 ${totalPLIsPositive ? 'text-emerald-glow' : 'text-red-glow'}`;
+
+      const valElem = document.getElementById('statValuationStatus');
+      const valSubElem = document.getElementById('statValuationSub');
+      if (isPortfolioOvervalued) {
+        valElem.innerText = `Overvalued (+${portfolioValuationDiff.toFixed(1)}%)`;
+        valElem.className = 'text-2xl font-bold mt-1 text-red-glow';
+        valSubElem.innerText = 'Trading at a premium above Intrinsic DCF Fair Value';
+      } else {
+        valElem.innerText = `Undervalued (${portfolioValuationDiff.toFixed(1)}%)`;
+        valElem.className = 'text-2xl font-bold mt-1 text-emerald-glow';
+        valSubElem.innerText = 'Trading at a discount below Intrinsic DCF Fair Value';
+      }
+
+      updateBenchmarkMetrics(totalPLPercent);
+      renderDarkPieChart(chartLabels, chartValues, totalCurrentValue);
+    }
+
+    function updateBenchmarkHorizon(tf, btnElement) {
+      selectedHorizon = tf;
+      if(btnElement) {
+        document.querySelectorAll('#tfFilterGroup button').forEach(b => {
+          b.className = 'px-2 py-1 rounded text-gray-400 hover:text-white transition';
+        });
+        btnElement.className = 'px-2 py-1 rounded bg-emerald-500 text-black font-extrabold shadow';
+      }
+
+      const totalEntryBasis = holdings.reduce((sum, h) => sum + (h.shares * h.entryPrice), 0);
+      const totalCurrentValue = holdings.reduce((sum, h) => sum + (h.shares * h.price), 0);
+      const fullPLPercent = totalEntryBasis > 0 ? ((totalCurrentValue - totalEntryBasis) / totalEntryBasis) * 100 : 0;
+
+      updateBenchmarkMetrics(fullPLPercent);
+    }
+
+    function updateBenchmarkMetrics(fullPortfolioGain) {
+      const data = benchmarkData[selectedHorizon] || benchmarkData['YTD'];
+      const pPerf = fullPortfolioGain * data.portfolioFactor;
+      const spPerf = data.sp;
+      const alpha = pPerf - spPerf;
+
+      document.getElementById('benchHorizonLabel').innerText = selectedHorizon;
+      document.getElementById('benchPortfolioPerf').innerText = (pPerf >= 0 ? '+' : '') + pPerf.toFixed(2) + '%';
+      document.getElementById('benchSpPerf').innerText = (spPerf >= 0 ? '+' : '') + spPerf.toFixed(2) + '%';
+      
+      const alphaElem = document.getElementById('benchAlpha');
+      alphaElem.innerText = (alpha >= 0 ? '+' : '') + alpha.toFixed(2) + '%';
+      alphaElem.className = `text-xl font-extrabold font-mono ${alpha >= 0 ? 'text-emerald-glow' : 'text-red-glow'}`;
+    }
+
+    function renderDarkPieChart(labels, dataValues, totalValue) {
+      const ctx = document.getElementById('portfolioPieChart').getContext('2d');
+      if (pieChartInstance) pieChartInstance.destroy();
+
+      const darkPalette = [
+        '#00C853', '#1e3a8a', '#0284c7', '#475569', 
+        '#312e81', '#881337', '#0369a1', '#b45309',
+        '#059669', '#3b82f6', '#6366f1'
+      ];
+
+      pieChartInstance = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: dataValues,
+            backgroundColor: darkPalette.slice(0, labels.length),
+            borderColor: '#141822',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#94a3b8', font: { size: 11, weight: 'bold' }, padding: 12, boxWidth: 12 }
+            },
+            tooltip: {
+              backgroundColor: '#0a0c10',
+              titleColor: '#ffffff',
+              bodyColor: '#00E676',
+              borderColor: '#252c3c',
+              borderWidth: 1,
+              callbacks: {
+                label: function(context) {
+                  const val = context.raw || 0;
+                  const pct = totalValue > 0 ? ((val / totalValue) * 100).toFixed(2) : 0;
+                  return ` ${context.label}: $${val.toLocaleString(undefined, {minimumFractionDigits: 2})} (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateRow(index, key, value) {
+      const parsedVal = parseFloat(value);
+      if (!isNaN(parsedVal) && parsedVal >= 0) {
+        holdings[index][key] = parsedVal;
+        renderHoldings();
+      }
+    }
+
+    function deleteAsset(index) {
+      if (confirm(`Are you sure you want to remove ${holdings[index].ticker} from your portfolio?`)) {
+        holdings.splice(index, 1);
+        renderHoldings();
+      }
+    }
+
+    function openAddAssetModal() {
+      document.getElementById('addAssetModal').classList.remove('hidden');
+    }
+
+    function closeAddAssetModal() {
+      document.getElementById('addAssetModal').classList.add('hidden');
+      document.getElementById('addAssetForm').reset();
+    }
+
+    function handleAddAsset(e) {
+      e.preventDefault();
+      const ticker = document.getElementById('newTicker').value.toUpperCase().trim();
+      const name = document.getElementById('newName').value.trim();
+      const price = parseFloat(document.getElementById('newPrice').value);
+      const entryPrice = parseFloat(document.getElementById('newEntryPrice').value);
+      const shares = parseFloat(document.getElementById('newShares').value);
+      const fairValue = parseFloat(document.getElementById('newFairValue').value);
+
+      if (!ticker || isNaN(price) || isNaN(entryPrice) || isNaN(shares)) {
+        return alert("Please fill in all fields correctly.");
+      }
+
+      holdings.push({
+        ticker,
+        name,
+        price,
+        priceChange: '+0.00%',
+        shares,
+        entryPrice,
+        fairValue: fairValue || price,
+        badgeBg: 'bg-emerald-600',
+        mCap: '10.0B',
+        beta: '+1.0',
+        peRatio: '+25.0',
+        eps: '+$2.50',
+        margin: '+15.0%',
+        debtEq: '+20.0%',
+        roe: '+18.0%'
+      });
+
+      renderHoldings();
+      closeAddAssetModal();
+    }
+
+    function openAboutModal() {
+      const d = activeTickerData;
+      document.getElementById('modalCompanyTitle').innerText = `${d.name} (${d.ticker})`;
+      document.getElementById('modalSectorTag').innerText = d.sector;
+      document.getElementById('modalIndustryTag').innerText = `Industry: ${d.industry}`;
+      document.getElementById('modalOverviewText').innerText = d.overview;
+
+      document.getElementById('modalFilingPeriod').innerText = `Filing Period: ${d.filingPeriod}`;
+      document.getElementById('modalNewFunds').innerText = d.newFunds;
+      document.getElementById('modalIncreasedFunds').innerText = d.increasedFunds;
+      document.getElementById('modalTotalInstOwn').innerText = d.totalInstOwn;
+
+      const instTable = document.getElementById('modalInstitutionalTable');
+      instTable.innerHTML = '';
+      d.investors.forEach(inv => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-panel-light/40 transition';
+        let badgeClass = inv.actionType === 'new' ? 'bg-sky-950 text-sky-400 border-sky-800' : 'bg-emerald-950 text-emerald-400 border-emerald-800';
+        row.innerHTML = `
+          <td class="p-2 font-bold text-white">${inv.fund}</td>
+          <td class="p-2"><span class="px-2 py-0.5 rounded text-[10px] font-semibold border ${badgeClass}">${inv.action}</span></td>
+          <td class="p-2 font-mono text-emerald-400 font-semibold">${inv.shares}</td>
+          <td class="p-2 font-mono text-gray-300">${inv.value}</td>
+        `;
+        instTable.appendChild(row);
+      });
+
+      const execGrid = document.getElementById('modalManagementGrid');
+      execGrid.innerHTML = '';
+      d.executives.forEach(e => {
+        const item = document.createElement('div');
+        item.className = 'bg-panel-light/40 border border-accent/50 p-3 rounded-lg flex justify-between items-center';
+        item.innerHTML = `<span class="text-gray-400">${e.role}</span><span class="text-white font-bold">${e.name}</span>`;
+        execGrid.appendChild(item);
+      });
+
+      const eBox = document.getElementById('modalEarningsBreakdown');
+      let segmentHtml = d.earnings.segments.map(s => `
+        <div class="flex justify-between text-xs py-1 border-b border-accent/30"><span class="text-gray-400">• ${s.name}</span><span class="text-emerald-400 font-mono font-bold">${s.value}</span></div>
+      `).join('');
+      eBox.innerHTML = `
+        <div class="text-xs font-semibold text-emerald-400 mb-1">${d.earnings.period}</div>
+        <div class="text-sm text-white font-bold mb-3">Total Quarterly Revenue: ${d.earnings.revenue}</div>
+        ${segmentHtml}
+      `;
+
+      document.getElementById('modalCatalysts').innerHTML = d.catalysts.map(c => `<li>${c}</li>`).join('');
+      document.getElementById('modalRisks').innerHTML = d.risks.map(r => `<li>${r}</li>`).join('');
+      document.getElementById('aboutModal').classList.remove('hidden');
+    }
+
+    function closeAboutModal() {
+      document.getElementById('aboutModal').classList.add('hidden');
+    }
+
+    function downloadPdfReport() {
+      const element = document.getElementById('report-container');
+      const opt = {
+        margin:       [0.2, 0.2, 0.2, 0.2],
+        filename:     'Portfolio_Report.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, backgroundColor: '#0d0f14', logging: false },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save();
+    }
+
+    // Initial Execution
+    renderWatchlist();
+    selectTicker(watchlistData[0]);
+    renderHoldings();
+  </script>
+</body>
+</html>
